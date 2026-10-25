@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14213D">
+<title>Squad KL 13</title>
+<!--
+  SETUP (only needed to share data between squad members' phones):
+  1. Go to console.firebase.google.com, create a free project.
+  2. Build > Realtime Database > Create database > start in TEST MODE.
+  3. Copy the database URL (looks like https://your-project-default-rtdb.firebaseio.com)
+  4. Paste it between the quotes on the FIREBASE_URL line below.
+  5. Put this one file online (Netlify Drop, GitHub Pages, Firebase Hosting) and send the link to your squad.
+  Leave FIREBASE_URL empty to use the app on one phone only.
+-->
+<style>
+:root{--ink:#14213D;--paper:#F2F5F8;--surface:#fff;--teal:#0E7C7B;--sun:#E8963A;--red:#B3261E;--line:#D5DDE5;--muted:#5B6B80;--warnbg:#FFF4E5;--infobg:#E6F3F2;--errbg:#FDECEA;--onink:#fff;
+--serif:'Iowan Old Style','Palatino Linotype',Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--ink:#E8EDF4;--paper:#0F1623;--surface:#18223A;--teal:#35B5B3;--sun:#F0A851;--red:#F2766E;--line:#2C3957;--muted:#9AA8BD;--warnbg:#3A2C17;--infobg:#143533;--errbg:#3D1D1A;--onink:#0F1623;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-text-size-adjust:100%}
+#app{max-width:520px;margin:0 auto;padding:24px 16px 60px}
+h1{font-family:var(--serif);font-size:30px;font-weight:600;margin:0;letter-spacing:-.5px}
+h2{font-family:var(--serif);font-size:20px;font-weight:600;margin:26px 0 12px}
+button,input,select{font-family:var(--sans);color:var(--ink)}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:16px;background:var(--surface)}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.between{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.muted{color:var(--muted)}.small{font-size:13px}.tiny{font-size:12.5px}
+.serif{font-family:var(--serif)}
+.mb10{margin-bottom:10px}.mb14{margin-bottom:14px}
+.btn{width:100%;padding:12px 0;border:none;border-radius:8px;font-size:16px;background:var(--ink);color:var(--onink)}
+.btn.off{background:var(--line);cursor:default}
+.btn.teal{background:var(--teal);color:#fff}.btn.grey{background:var(--muted);color:#fff}
+.btn.outline{background:transparent;border:1px solid var(--line);color:var(--red)}
+.add{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 0;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:16px;margin-bottom:18px}
+.ghost{background:none;border:none;color:var(--muted);padding:4px;font-size:16px}
+.tabs{display:flex;gap:4px;margin:16px 0 18px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tabs button{flex:1;padding:9px 0;border:none;border-radius:7px;background:transparent;color:var(--muted);font-size:12.5px}
+.tabs button.on{background:var(--ink);color:var(--onink)}
+.seg{display:flex;gap:8px;margin-bottom:14px}
+.seg button{flex:1;padding:10px 0;border-radius:8px;border:1.5px solid var(--line);background:transparent;font-size:15px}
+.seg button.on{background:var(--ink);color:var(--onink);border-color:var(--ink)}
+.banner{border-radius:12px;padding:12px;margin-bottom:14px;font-size:14.5px;width:100%;text-align:left;display:block}
+.track{position:relative;height:10px;margin:10px 0 8px}
+.track .bg{position:absolute;inset:0;background:var(--paper);border-radius:5px;border:1px solid var(--line)}
+.track .fill{position:absolute;top:0;bottom:0;left:0;border-radius:5px;transition:width .4s ease}
+.track .mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:1px}
+.circle{flex-shrink:0;width:34px;height:34px;border-radius:17px;border:1.5px solid var(--line);background:transparent;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center}
+.circle.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.pos{color:var(--teal)}.neg{color:var(--red)}.warn{color:var(--sun)}
+.del{text-align:right;margin-top:6px}
+.del .yes{color:var(--red);font-weight:600;background:none;border:none;font-size:13px}
+.del .no{color:var(--muted);background:none;border:none;font-size:13px}
+.stat .v{font-family:var(--serif);font-size:22px}.stat .l{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chip{padding:7px 12px;border-radius:16px;font-size:14px;border:1.5px solid var(--line);background:transparent}
+.chip.on{background:var(--ink);color:var(--onink);border-color:var(--ink)}
+.rsvp{display:flex;gap:6px;margin-top:12px}
+.rsvp button{flex:1;padding:9px 0;border-radius:8px;font-size:14px;border:1.5px solid var(--line);background:transparent}
+.dot{display:inline-block;width:8px;height:8px;border-radius:4px;margin-right:6px}
+@media (prefers-reduced-motion:reduce){.track .fill{transition:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+/* ====== PASTE YOUR FIREBASE DATABASE URL BETWEEN THE QUOTES (optional) ====== */
+var FIREBASE_URL = "https://kl-13-esports-og-default-rtdb.firebaseio.com";
+/* ========================================================================== */
+var SQUAD_NAME='KL 13', SQ='KL_13';
+var LS={profile:'sq-app-profile',goals:'sq-app-goals',money:'sq-app-money',squad:'sq-app-squad-local'};
+var CATS_IN=['Salary','Streaming','Sponsorship','Coaching','Other'];
+var CATS_OUT=['Gear','Travel','Food','Subscriptions','Bills','Other'];
+var CATS_SQ=['Entry fee','Gear','Travel','Food','Subscription','Other'];
+var DAY=86400000;
+var DB=FIREBASE_URL.replace(/\/+$/,'');
+
+function today(){var d=new Date();return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/DAY)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function san(s){return String(s).trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'_').slice(0,40)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function fmt(n){return Number.isInteger(n)?String(n):n.toFixed(1)}
+function ordinal(n){var s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
+function niceDate(d){return new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
+function countdown(d){var n=daysBetween(today(),d);if(n===0)return'Today';if(n===1)return'Tomorrow';if(n>1)return'In '+n+' days';return Math.abs(n)+' day'+(n===-1?'':'s')+' ago'}
+function vals(o){return Object.keys(o||{}).map(function(k){return o[k]})}
+
+var S={tab:'schedule',profile:null,goals:[],entries:[],squad:{members:{},t:{},e:{},r:{}},sync:DB?'connecting':'local',error:'',
+ui:{goalForm:false,moneyForm:false,tForm:false,sForm:false,tView:'upcoming',month:today().slice(0,7),recording:null,confirm:null,log:{},leave:false},
+drafts:{join:{name:''},goal:{title:'',target:'',unit:'',deadline:''},
+money:{type:'spending',amount:'',category:CATS_OUT[0],note:'',date:today()},
+sched:{name:'',game:'',date:today(),time:'',fee:'',paidBy:'',notes:''},
+result:{placement:'',prize:'',receivedBy:'',notes:''},
+split:{type:'expense',desc:'',amount:'',who:'',category:CATS_SQ[0],date:today(),split:[]}}};
+
+/* ---------- storage ---------- */
+function lsGet(k,def){try{var r=localStorage.getItem(k);return r?JSON.parse(r):def}catch(e){return def}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){S.error='This browser is blocking saved data, so changes may be lost.';return false}}
+function savePersonal(){lsSet(LS.goals,S.goals);lsSet(LS.money,S.entries)}
+function normSquad(d){d=d||{};return{members:d.members||{},t:d.t||{},e:d.e||{},r:d.r||{}}}
+function url(path){return DB+'/squads/'+SQ+path+'.json'}
+function pull(){
+if(!DB){S.squad=normSquad(lsGet(LS.squad,{}));S.sync='local';return Promise.resolve()}
+return fetch(url('')).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json()}).then(function(d){S.squad=normSquad(d);S.sync='online'}).catch(function(){S.sync='offline'})}
+function put(kind,id,obj){
+S.squad[kind][id]=obj;
+if(!DB){lsSet(LS.squad,S.squad);return Promise.resolve()}
+return fetch(url('/'+kind+'/'+id),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)}).then(function(r){if(!r.ok)throw 0;S.sync='online'}).catch(function(){S.sync='offline';S.error="Couldn't reach the squad database. That change may not be shared.";render()})}
+function del(kind,id){
+delete S.squad[kind][id];
+if(!DB){lsSet(LS.squad,S.squad);return Promise.resolve()}
+return fetch(url('/'+kind+'/'+id),{method:'DELETE'}).then(function(r){if(!r.ok)throw 0}).catch(function(){S.sync='offline';S.error="Couldn't reach the squad database. That delete may not be shared.";render()})}
+
+/* ---------- derived ---------- */
+function sym(){return(S.profile&&S.profile.currency)||'$'}
+function money(n,signed){var body=sym()+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:2});if(!signed)return n<0?'-'+body:body;return(Math.abs(n)<0.005?'':n<0?'-':'+')+body}
+function me(){return S.profile?S.profile.name:''}
+function names(){var n=vals(S.squad.members).map(function(m){return m.name}).sort(function(a,b){return a.localeCompare(b)});if(me()&&n.indexOf(me())<0)n.push(me());return n}
+function balances(){var b={};names().forEach(function(n){b[n]=0});function add(n,v){b[n]=(b[n]||0)+v}
+vals(S.squad.e).forEach(function(e){if(e.type==='expense'){add(e.who,e.amount);e.split.forEach(function(n){add(n,-e.amount/e.split.length)})}else if(e.type==='prize'){add(e.who,-e.amount);e.split.forEach(function(n){add(n,e.amount/e.split.length)})}else if(e.type==='payment'){add(e.who,e.amount);add(e.to,-e.amount)}});return b}
+function transfers(bal){var D=[],C=[];Object.keys(bal).forEach(function(n){var v=bal[n];if(v<-0.005)D.push({n:n,v:-v});else if(v>0.005)C.push({n:n,v:v})});D.sort(function(a,b){return b.v-a.v});C.sort(function(a,b){return b.v-a.v});var out=[],i=0,j=0;
+while(i<D.length&&j<C.length){var a=Math.min(D[i].v,C[j].v);if(a>0.005)out.push({from:D[i].n,to:C[j].n,amount:Math.round(a*100)/100});D[i].v-=a;C[j].v-=a;if(D[i].v<0.005)i++;if(C[j].v<0.005)j++}return out}
+
+/* ---------- view helpers ---------- */
+function inp(path,val,attrs){return '<input data-f="'+path+'" value="'+esc(val)+'" '+(attrs||'')+'>'}
+function sel(path,opts,cur,first){return '<select data-f="'+path+'">'+(first?'<option value="">'+esc(first)+'</option>':'')+opts.map(function(o){return '<option'+(o===cur?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select>'}
+function formHead(title,act){return '<div class="between mb10" style="align-items:center"><strong class="serif" style="font-size:18px">'+title+'</strong><button class="ghost" data-act="'+act+'" aria-label="Cancel">✕</button></div>'}
+function delRow(kind,id,label){var key=kind+id;if(S.ui.confirm===key)return '<div class="del small muted">'+label+' <button class="yes" data-act="delYes" data-kind="'+kind+'" data-id="'+id+'">Delete</button> <button class="no" data-act="delNo">Keep</button></div>';return '<div class="del"><button class="ghost" aria-label="Delete" data-act="delAsk" data-kind="'+kind+'" data-id="'+id+'">🗑</button></div>'}
+
+/* ---------- JOIN ---------- */
+function joinView(){var n=S.drafts.join.name,ok=n.trim().length>=2;
+return '<div style="padding-top:20px"><h1>Squad '+SQUAD_NAME+'</h1><p class="muted" style="font-size:15px;margin:6px 0 24px;line-height:1.45">Your goals and money, plus shared tournament reminders and expenses for your squad.</p>'
++'<div class="card"><label class="small muted">Your player name</label><div style="margin:4px 0 14px">'+inp('drafts.join.name',n,'placeholder="e.g. Ravi" autocomplete="off"')+'</div>'
++'<button class="btn '+(ok?'':'off')+'" data-act="join">Join squad '+SQUAD_NAME+'</button>'
++'<p class="tiny muted" style="margin:12px 0 0;line-height:1.4">Use the same name every time to get back into your account. '+(DB?'Anyone who opens this app can join the squad and see its schedule and expenses.':'This copy of the app is not connected to a database yet, so squad data stays on this phone.')+'</p></div></div>'}
+
+/* ---------- GOALS ---------- */
+function pace(g){if(g.done||!g.deadline)return null;var total=Math.max(1,daysBetween(g.createdAt,g.deadline));var el=Math.min(total,Math.max(0,daysBetween(g.createdAt,today())));var left=daysBetween(today(),g.deadline);var exp=el/total*g.target;var diff=g.current-exp;var st='on pace';if(left<0&&g.current<g.target)st='overdue';else if(diff>g.target*.05)st='ahead';else if(diff<-g.target*.05)st='behind';return{left:left,status:st,exp:Math.min(100,exp/g.target*100)}}
+function goalCard(g){
+var pct=Math.min(100,g.current/g.target*100),p=pace(g),late=p&&(p.status==='behind'||p.status==='overdue');
+var h='<div class="card" style="'+(g.done?'opacity:.75':'')+'"><div class="between" style="align-items:flex-start"><div class="serif" style="font-size:19px;line-height:1.25">'+esc(g.title)+'</div><button class="circle '+(g.done?'on':'')+'" data-act="goalDone" data-id="'+g.id+'" aria-label="'+(g.done?'Reopen goal':'Mark goal done')+'">'+(g.done?'↺':'✓')+'</button></div>'
++'<div style="display:flex;align-items:baseline;gap:6px;margin-top:10px"><span class="serif" style="font-size:30px">'+fmt(g.current)+'</span><span class="muted" style="font-size:14px">of '+fmt(g.target)+' '+esc(g.unit)+'</span></div>'
++'<div class="track"><div class="bg"></div><div class="fill" style="width:'+pct+'%;background:var(--'+(late?'sun':'teal')+')"></div>'+(p?'<div class="mark" style="left:calc('+p.exp+'% - 1px)"></div>':'')+'</div>'
++'<div class="between small muted"><span>'+Math.round(pct)+'% complete</span>'+(p?'<span class="'+(late?'warn':'pos')+'" style="font-weight:600">'+(p.status==='overdue'?'Overdue by '+Math.abs(p.left)+'d':p.status+', '+p.left+'d left')+'</span>':'')+(g.done?'<span class="pos" style="font-weight:600">Done</span>':'')+'</div>';
+if(!g.done)h+='<div class="row" style="margin-top:14px"><input type="number" inputmode="decimal" placeholder="Add progress'+(g.unit?' ('+esc(g.unit)+')':'')+'" data-f="ui.log.'+g.id+'" value="'+esc(S.ui.log[g.id]||'')+'"><button class="btn" style="flex:0 0 72px;padding:0" data-act="goalLog" data-id="'+g.id+'">Log</button></div>';
+if(g.log.length)h+='<div class="tiny muted" style="margin-top:12px">Last update: '+(g.log[0].amt>0?'+':'')+fmt(g.log[0].amt)+' '+esc(g.unit)+' on '+g.log[0].date+'</div>';
+return h+delRow('goal',g.id,'Delete this goal?')+'</div>'}
+function goalsView(){
+var act=S.goals.filter(function(g){return!g.done}),fin=S.goals.filter(function(g){return g.done}),d=S.drafts.goal;
+var h='<p class="muted" style="margin:0 0 16px;font-size:15px">Your private goals. Only you can see these.'+(S.goals.length?' '+act.length+' in progress, '+fin.length+' done.':'')+'</p>';
+if(!S.ui.goalForm)h+='<button class="add" data-act="goalForm">＋ Add a goal</button>';
+else h+='<div class="card" style="margin-bottom:18px">'+formHead('New goal','goalForm')
++'<div class="mb10">'+inp('drafts.goal.title',d.title,'placeholder="What do you want to achieve?"')+'</div>'
++'<div class="row mb10">'+inp('drafts.goal.target',d.target,'type="number" inputmode="decimal" placeholder="Target (e.g. 12)"')+inp('drafts.goal.unit',d.unit,'placeholder="Unit (wins)"')+'</div>'
++'<label class="small muted" style="display:block;margin-bottom:4px">Deadline (optional)</label><div class="mb14">'+inp('drafts.goal.deadline',d.deadline,'type="date" min="'+today()+'"')+'</div>'
++'<p class="tiny muted" style="margin:0 0 12px">Leave the target empty to track progress as a percentage out of 100.</p>'
++'<button class="btn '+(d.title.trim()?'':'off')+'" data-act="goalSave">Save goal</button></div>';
+h+=act.map(goalCard).join('');if(fin.length)h+='<h2>Completed</h2>'+fin.map(goalCard).join('');return h}
+
+/* ---------- MY MONEY ---------- */
+function myMoneyView(){
+var m=S.ui.month,d=S.drafts.money;
+var label=new Date(m+'-01T00:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'});
+var inM=S.entries.filter(function(e){return e.date.indexOf(m)===0}).sort(function(a,b){return b.date.localeCompare(a.date)});
+var inc=0,out=0;inM.forEach(function(e){if(e.type==='income')inc+=e.amount;else out+=e.amount});var net=inc-out;
+function row(l,v,c){return '<div class="between" style="padding:6px 0;font-size:15px"><span class="muted">'+l+'</span><span class="'+(c||'')+'" style="font-weight:600">'+v+'</span></div>'}
+var h='<div class="between mb14" style="align-items:center"><button class="ghost" data-act="monthPrev" aria-label="Previous month" style="font-size:22px">‹</button><div class="serif" style="font-size:20px">'+label+'</div><button class="ghost" data-act="monthNext" aria-label="Next month" style="font-size:22px">›</button></div>'
++'<div class="card"><div class="small muted">'+(net>=0?'Profit this month':'Loss this month')+' (just you)</div><div class="serif '+(net>=0?'pos':'neg')+'" style="font-size:38px;margin:2px 0 8px">'+money(net,true)+'</div>'
++'<div style="border-top:1px solid var(--line);padding-top:6px">'+row('Income',money(inc),'pos')+row('Spending',money(-out),out>0?'neg':'')+'</div>'
++'<p class="tiny muted" style="margin:8px 0 0">Private to you. Shared squad costs go in the Split tab.</p></div>';
+if(!S.ui.moneyForm)h+='<button class="add" data-act="moneyForm">＋ Add income or spending</button>';
+else{var cats=d.type==='income'?CATS_IN:CATS_OUT;
+h+='<div class="card" style="margin-bottom:18px">'+formHead('New entry','moneyForm')
++'<div class="seg" style="margin-bottom:10px"><button class="'+(d.type==='spending'?'on':'')+'" data-act="moneyType" data-type="spending">Spending</button><button class="'+(d.type==='income'?'on':'')+'" data-act="moneyType" data-type="income">Income</button></div>'
++'<div class="row mb10">'+inp('drafts.money.amount',d.amount,'type="number" inputmode="decimal" placeholder="Amount ('+esc(sym())+')"')+sel('drafts.money.category',cats,d.category)+'</div>'
++'<div class="mb10">'+inp('drafts.money.note',d.note,'placeholder="Note (optional)"')+'</div><div class="mb14">'+inp('drafts.money.date',d.date,'type="date"')+'</div>'
++'<button class="btn '+(parseFloat(d.amount)>0?'':'off')+'" data-act="moneySave">Save entry</button></div>'}
+if(!inM.length)h+='<p class="muted" style="font-size:15px">Nothing recorded for '+label+' yet.</p>';
+h+=inM.map(function(e){return '<div class="card" style="padding:14px"><div class="between"><div><div style="font-size:16px">'+esc(e.category)+'</div><div class="tiny muted">'+niceDate(e.date)+(e.note?' · '+esc(e.note):'')+'</div></div><div class="serif '+(e.type==='income'?'pos':'neg')+'" style="font-size:20px">'+(e.type==='income'?'+':'-')+money(e.amount)+'</div></div>'+delRow('money',e.id,'Delete this entry?')+'</div>'}).join('');
+return h}
+
+/* ---------- SCHEDULE ---------- */
+function resultFields(path,d,N){return '<div class="row mb10">'+inp(path+'.placement',d.placement,'type="number" inputmode="numeric" placeholder="Placement (1 = win)"')+inp(path+'.prize',d.prize,'type="number" inputmode="decimal" placeholder="Prize won ('+esc(sym())+')"')+'</div><div class="mb10">'+sel(path+'.receivedBy',N,d.receivedBy,'Prize received by...')+'</div><div class="mb10">'+inp(path+'.notes',d.notes,'placeholder="Notes (optional)"')+'</div>'}
+function scheduleView(){
+var N=names(),d=S.drafts.sched,v=S.ui.tView;
+var T=vals(S.squad.t),R=vals(S.squad.r);
+var up=T.filter(function(t){return t.status==='upcoming'}).sort(function(a,b){return(a.date+(a.time||'')).localeCompare(b.date+(b.time||''))});
+var hist=T.filter(function(t){return t.status==='played'}).sort(function(a,b){return b.date.localeCompare(a.date)});
+var h='<div class="seg"><button class="'+(v==='upcoming'?'on':'')+'" data-act="tView" data-v="upcoming">Upcoming ('+up.length+')</button><button class="'+(v==='history'?'on':'')+'" data-act="tView" data-v="history">History ('+hist.length+')</button></div>';
+if(!S.ui.tForm)h+='<button class="add" data-act="tForm">＋ Add a tournament</button>';
+else h+='<div class="card" style="margin-bottom:18px">'+formHead('New tournament','tForm')
++'<div class="mb10">'+inp('drafts.sched.name',d.name,'placeholder="Tournament name"')+'</div><div class="mb10">'+inp('drafts.sched.game',d.game,'placeholder="Game (e.g. BGMI, Valorant)"')+'</div>'
++'<div class="row mb10">'+inp('drafts.sched.date',d.date,'type="date"')+inp('drafts.sched.time',d.time,'type="time"')+'</div>'
++'<div class="row mb10">'+inp('drafts.sched.fee',d.fee,'type="number" inputmode="decimal" placeholder="Team entry fee ('+esc(sym())+')"')+sel('drafts.sched.paidBy',N,d.paidBy,'Fee paid by...')+'</div>'
++'<div class="mb10">'+inp('drafts.sched.notes',d.notes,'placeholder="Notes: room code, link, rules"')+'</div>'
++'<p class="tiny muted" style="margin:0 0 12px">If you pick who paid the fee, it is added to Split and shared equally across the squad.</p>'
++'<button class="btn '+(d.name.trim()?'':'off')+'" data-act="tSave">Save tournament</button></div>';
+if(v==='upcoming'){
+if(!up.length)h+='<p class="muted" style="font-size:15px">No upcoming tournaments. Add one and the whole squad sees the reminder.</p>';
+h+=up.map(function(t){var n=daysBetween(today(),t.date),soon=n>=0&&n<=3,past=n<0,due=past||n===0;
+var rs=R.filter(function(r){return r.tid===t.id}),mine=rs.filter(function(r){return r.name===me()})[0];
+function grp(s){return rs.filter(function(r){return r.status===s}).map(function(r){return esc(r.name)})}
+var waiting=N.filter(function(x){return!rs.some(function(r){return r.name===x})});
+var h2='<div class="card" style="'+(soon?'border:1.5px solid var(--sun)':past?'border:1.5px solid var(--teal)':'')+'"><div class="between" style="align-items:flex-start"><div><div class="serif" style="font-size:19px">'+esc(t.name)+'</div><div class="small muted">'+(t.game?esc(t.game)+' · ':'')+niceDate(t.date)+(t.time?' at '+esc(t.time):'')+(t.fee?' · Fee '+money(t.fee):'')+'</div></div><div class="'+(soon?'warn':past?'pos':'muted')+'" style="font-size:14px;font-weight:600;white-space:nowrap">'+countdown(t.date)+'</div></div>'
++(t.notes?'<div style="font-size:14px;margin-top:8px">'+esc(t.notes)+'</div>':'');
+if(!past){h2+='<div class="rsvp">'+[['in',"I'm in",'teal'],['maybe','Maybe','sun'],['out',"Can't",'red']].map(function(x){var on=mine&&mine.status===x[0];return '<button data-act="rsvp" data-id="'+t.id+'" data-s="'+x[0]+'" style="'+(on?'background:var(--'+x[2]+');border-color:var(--'+x[2]+');color:#fff':'')+'">'+x[1]+'</button>'}).join('')+'</div>'
++'<div class="small muted" style="margin-top:8px;line-height:1.5">'+(grp('in').length?'<div><strong class="pos">In:</strong> '+grp('in').join(', ')+'</div>':'')+(grp('maybe').length?'<div><strong class="warn">Maybe:</strong> '+grp('maybe').join(', ')+'</div>':'')+(grp('out').length?'<div><strong class="neg">Can\'t:</strong> '+grp('out').join(', ')+'</div>':'')+(waiting.length?'<div>Waiting on: '+waiting.map(esc).join(', ')+'</div>':'')+'</div>'}
+if(S.ui.recording===t.id)h2+='<div style="margin-top:14px">'+resultFields('drafts.result',S.drafts.result,N)+'<div class="row"><button class="btn teal" data-act="recSave" data-id="'+t.id+'">Save result</button><button class="btn grey" data-act="recCancel">Cancel</button></div></div>';
+else h2+='<button data-act="rec" data-id="'+t.id+'" style="margin-top:12px;padding:9px 14px;border-radius:8px;font-size:14px;border:1px solid '+(due?'var(--teal)':'var(--line)')+';background:'+(due?'var(--teal)':'transparent')+';color:'+(due?'#fff':'var(--ink)')+'">Record result</button>';
+return h2+delRow('t',t.id,'Delete this tournament?')+'</div>'}).join('')}
+else{
+var fees=0,prz=0,wins=0,top3=0;hist.forEach(function(t){fees+=t.fee||0;prz+=t.prize||0;if(t.placement===1)wins++;if(t.placement>=1&&t.placement<=3)top3++});var net=prz-fees;
+function st(l,val,c){return '<div class="stat" style="flex:1;min-width:0"><div class="v '+(c||'')+'">'+val+'</div><div class="l">'+l+'</div></div>'}
+if(hist.length)h+='<div class="card"><div class="row mb14">'+st('Played',hist.length)+st('Wins',wins)+st('Top 3',top3)+'</div><div class="row" style="border-top:1px solid var(--line);padding-top:12px">'+st('Fees paid',money(fees))+st('Prizes won',money(prz))+st(net>=0?'Profit':'Loss',money(net,true),net>=0?'pos':'neg')+'</div></div>';
+else h+='<p class="muted" style="font-size:15px">No results yet. Record a result after your first tournament.</p>';
+h+=hist.map(function(t){var n=(t.prize||0)-(t.fee||0);return '<div class="card"><div class="between" style="align-items:flex-start"><div><div class="serif" style="font-size:19px">'+esc(t.name)+'</div><div class="small muted">'+(t.game?esc(t.game)+' · ':'')+niceDate(t.date)+'</div></div><div style="text-align:right"><div class="serif '+(n>=0?'pos':'neg')+'" style="font-size:20px">'+money(n,true)+'</div>'+(t.placement?'<div class="small muted">'+(t.placement===1?'🏆 ':'')+ordinal(t.placement)+' place</div>':'')+'</div></div>'
++'<div class="small muted" style="margin-top:8px">Fee '+money(t.fee||0)+' · Prize '+money(t.prize||0)+'</div>'+(t.notes?'<div style="font-size:14px;margin-top:8px">'+esc(t.notes)+'</div>':'')+delRow('t',t.id,'Delete this record?')+'</div>'}).join('')}
+return h}
+
+/* ---------- SPLIT ---------- */
+function splitView(){
+var N=names(),d=S.drafts.split,E=vals(S.squad.e);
+var bal=balances(),tr=transfers(bal),mine=bal[me()]||0;
+var spent=0,got=0;E.forEach(function(e){if(e.type==='expense')spent+=e.amount;else if(e.type==='prize')got+=e.amount});
+var h='<div class="card"><div class="small muted">'+(Math.abs(mine)<0.005?"You're all settled up":mine>0?'The squad owes you':'You owe the squad')+'</div><div class="serif '+(mine>0.005?'pos':mine<-0.005?'neg':'')+'" style="font-size:38px;margin:2px 0 8px">'+money(Math.abs(mine))+'</div>'
++'<div class="between small muted" style="border-top:1px solid var(--line);padding-top:8px"><span>Squad spent '+money(spent)+'</span><span>Prizes in '+money(got)+'</span></div></div>';
+if(tr.length)h+='<div class="card"><strong class="serif" style="font-size:17px">Settle up</strong>'+tr.map(function(t,i){var inv=t.from===me()||t.to===me();return '<div class="between" style="align-items:center;padding:10px 0;'+(i?'border-top:1px solid var(--line);':'margin-top:8px;')+'font-size:15px"><span><strong>'+(t.from===me()?'You':esc(t.from))+'</strong> pay'+(t.from===me()?'':'s')+' <strong>'+(t.to===me()?'you':esc(t.to))+'</strong> '+money(t.amount)+'</span>'+(inv?'<button data-act="settle" data-from="'+esc(t.from)+'" data-to="'+esc(t.to)+'" data-amt="'+t.amount+'" style="padding:7px 12px;border-radius:8px;border:1px solid var(--teal);background:transparent;color:var(--teal);font-size:13px;white-space:nowrap">Mark paid</button>':'')+'</div>'}).join('')+'</div>';
+if(!S.ui.sForm)h+='<button class="add" data-act="sForm">＋ Add expense or prize</button>';
+else{var valid=parseFloat(d.amount)>0&&d.desc.trim()&&d.split.length>0;
+h+='<div class="card" style="margin-bottom:18px">'+formHead('New entry','sForm')
++'<div class="seg" style="margin-bottom:10px"><button class="'+(d.type==='expense'?'on':'')+'" data-act="sType" data-type="expense">Expense</button><button class="'+(d.type==='prize'?'on':'')+'" data-act="sType" data-type="prize">Money in</button></div>'
++'<div class="mb10">'+inp('drafts.split.desc',d.desc,'placeholder="'+(d.type==='expense'?'What was it for?':'Where did it come from?')+'"')+'</div>'
++'<div class="row mb10">'+inp('drafts.split.amount',d.amount,'type="number" inputmode="decimal" placeholder="Amount ('+esc(sym())+')"')+(d.type==='expense'?sel('drafts.split.category',CATS_SQ,d.category):inp('drafts.split.date',d.date,'type="date"'))+'</div>'
++'<label class="small muted" style="display:block;margin-bottom:4px">'+(d.type==='expense'?'Paid by':'Received by')+'</label><div class="mb10">'+sel('drafts.split.who',N,d.who||me())+'</div>'
++(d.type==='expense'?'<div class="mb10">'+inp('drafts.split.date',d.date,'type="date"')+'</div>':'')
++'<label class="small muted" style="display:block;margin-bottom:6px">Split equally between</label><div class="chips">'+N.map(function(n,i){return '<button class="chip '+(d.split.indexOf(n)>=0?'on':'')+'" data-act="splitTog" data-i="'+i+'">'+esc(n)+'</button>'}).join('')+'</div>'
++'<button class="btn '+(valid?'':'off')+'" data-act="sSave">Save entry</button></div>'}
+var sorted=E.slice().sort(function(a,b){return(b.date+b.id).localeCompare(a.date+a.id)});
+if(!sorted.length)h+='<p class="muted" style="font-size:15px">No entries yet. Add the first expense and the app works out who owes who.</p>';
+h+=sorted.map(function(e){var inn=e.type==='prize',pay=e.type==='payment';
+return '<div class="card" style="padding:14px"><div class="between"><div><div style="font-size:16px">'+(pay?esc(e.who)+' paid '+esc(e.to):esc(e.desc))+'</div><div class="tiny muted">'+niceDate(e.date)+(pay?'':' · '+(inn?'Received by ':'Paid by ')+esc(e.who)+' · '+(e.split.length===N.length?'everyone':e.split.map(esc).join(', ')))+'</div></div><div class="serif '+(inn?'pos':pay?'muted':'neg')+'" style="font-size:20px;white-space:nowrap">'+(inn?'+':pay?'':'-')+money(e.amount)+'</div></div>'+delRow('e',e.id,'Delete this entry?')+'</div>'}).join('');
+return h}
+
+/* ---------- SQUAD ---------- */
+function squadView(){
+var M=vals(S.squad.members).sort(function(a,b){return a.name.localeCompare(b.name)});
+var st={local:['Saved on this phone only','var(--muted)'],online:['Connected. Updates every 15 seconds','var(--teal)'],offline:['Can\'t reach the database right now','var(--red)'],connecting:['Connecting...','var(--muted)']}[S.sync];
+var h='<div class="card"><div class="small muted">Squad</div><div class="serif" style="font-size:28px;margin:2px 0 8px">'+SQUAD_NAME+'</div><div class="small"><span class="dot" style="background:'+st[1]+'"></span>'+st[0]+'</div>'
++(DB?'':'<p class="tiny muted" style="margin:10px 0 0;line-height:1.45">To share the schedule and expenses between phones, add a free Firebase database link to this file (steps are in the comment at the top of the file), then put the file online and send the link to your squad.</p>')+'</div>'
++'<div class="card"><strong class="serif" style="font-size:17px">Players ('+M.length+')</strong>'+M.map(function(m,i){return '<div style="padding:10px 0;'+(i?'border-top:1px solid var(--line);':'margin-top:8px;')+'font-size:16px">'+esc(m.name)+(m.name===me()?'<span class="small muted"> (you)</span>':'')+'</div>'}).join('')+'</div>';
+if(!S.ui.leave)h+='<button class="btn outline" data-act="leaveAsk">Leave squad on this phone</button>';
+else h+='<div class="card" style="text-align:center"><p style="margin:0 0 12px;font-size:15px">Leave on this phone? The squad\'s data stays for everyone else, and you can rejoin with the same name. Your private goals and money stay saved.</p><div class="row"><button class="btn" style="background:var(--red);color:#fff" data-act="leaveYes">Leave</button><button class="btn grey" data-act="leaveNo">Stay</button></div></div>';
+return h}
+
+/* ---------- RENDER ---------- */
+function render(){
+var app=document.getElementById('app');
+if(!S.profile){app.innerHTML=joinView();return}
+var T=vals(S.squad.t),R=vals(S.squad.r);
+var rem=T.filter(function(t){var n=daysBetween(today(),t.date);return t.status==='upcoming'&&n>=0&&n<=3}).sort(function(a,b){return a.date.localeCompare(b.date)});
+var need=T.filter(function(t){return t.status==='upcoming'&&daysBetween(today(),t.date)<0});
+var noReply=T.filter(function(t){return t.status==='upcoming'&&daysBetween(today(),t.date)>=0&&!R.some(function(r){return r.tid===t.id&&r.name===me()})});
+var h='<div class="between" style="align-items:center"><div><h1>Squad '+SQUAD_NAME+'</h1><div class="small muted">'+esc(me())+'</div></div><div style="display:flex;gap:6px;align-items:center"><button class="ghost" data-act="refresh" aria-label="Refresh" style="font-size:20px">⟳</button><select data-f="profile.currency" data-render aria-label="Currency" style="width:auto;padding:6px 8px;font-size:15px">'+['$','€','£','₹','¥','₦','R$'].map(function(c){return '<option'+(c===sym()?' selected':'')+'>'+c+'</option>'}).join('')+'</select></div></div>'
++'<div class="tabs">'+[['goals','Goals'],['money','My money'],['schedule','Schedule'],['split','Split'],['squad','Squad']].map(function(t){return '<button class="'+(S.tab===t[0]?'on':'')+'" data-act="tab" data-v="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>';
+if(rem.length)h+='<div class="banner" style="background:var(--warnbg);border:1px solid var(--sun)">'+rem.map(function(t){var c=R.filter(function(r){return r.tid===t.id&&r.status==='in'}).length;return '<div style="padding:3px 0">🔔 <strong>'+esc(t.name)+'</strong> '+countdown(t.date).toLowerCase()+(t.time?' at '+esc(t.time):'')+' · '+c+' in</div>'}).join('')+'</div>';
+if(noReply.length&&S.tab!=='schedule')h+='<button class="banner" data-act="tab" data-v="schedule" style="background:var(--surface);border:1px solid var(--line)">You haven\'t replied to '+noReply.length+' tournament'+(noReply.length>1?'s':'')+'. Tap to say if you\'re in.</button>';
+if(need.length&&S.tab!=='schedule')h+='<button class="banner" data-act="tab" data-v="schedule" style="background:var(--infobg);border:1px solid var(--teal)">'+need.length+' tournament'+(need.length>1?'s':'')+' finished. Tap to record the result.</button>';
+if(S.sync==='offline'&&DB)h+='<div class="banner" style="background:var(--errbg);color:var(--red)">Can\'t reach the squad database. Showing the last data this phone saw.</div>';
+if(S.error)h+='<div class="banner" style="background:var(--errbg);color:var(--red)">'+esc(S.error)+'</div>';
+h+=S.tab==='goals'?goalsView():S.tab==='money'?myMoneyView():S.tab==='schedule'?scheduleView():S.tab==='split'?splitView():squadView();
+app.innerHTML=h}
+
+/* ---------- events ---------- */
+function setPath(path,val){var p=path.split('.'),o=S;for(var i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=val}
+function saveProfile(){lsSet(LS.profile,S.profile)}
+function typing(){var a=document.activeElement;return a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)&&document.getElementById('app').contains(a)}
+
+document.addEventListener('input',function(e){var t=e.target,f=t.getAttribute&&t.getAttribute('data-f');if(!f||t.type==='checkbox')return;setPath(f,t.value);
+var btn=document.querySelector('[data-act=goalSave],[data-act=moneySave],[data-act=tSave],[data-act=sSave],[data-act=join]');
+if(btn){var d=S.drafts,ok=true,a=btn.getAttribute('data-act');
+if(a==='goalSave')ok=d.goal.title.trim().length>0;else if(a==='moneySave')ok=parseFloat(d.money.amount)>0;else if(a==='tSave')ok=d.sched.name.trim().length>0;else if(a==='join')ok=d.join.name.trim().length>=2;else if(a==='sSave')ok=parseFloat(d.split.amount)>0&&d.split.desc.trim().length>0&&d.split.split.length>0;
+btn.classList.toggle('off',!ok)}});
+document.addEventListener('change',function(e){var t=e.target,f=t.getAttribute&&t.getAttribute('data-f');if(!f)return;setPath(f,t.value);if(f==='profile.currency')saveProfile();if(t.hasAttribute('data-render'))render()});
+
+document.addEventListener('click',function(e){
+var el=e.target.closest('[data-act]');if(!el)return;
+var a=el.getAttribute('data-act'),id=el.getAttribute('data-id'),D=S.drafts,N;
+S.error='';
+switch(a){
+case 'join':{var nm=D.join.name.trim();if(nm.length<2)return;S.profile={name:nm,currency:'$'};saveProfile();pull().then(function(){return put('members',san(nm),{name:nm,joined:today()})}).then(render);S.tab='schedule';break}
+case 'refresh':pull().then(render);return;
+case 'tab':S.tab=el.getAttribute('data-v');S.ui.confirm=null;break;
+case 'goalForm':S.ui.goalForm=!S.ui.goalForm;break;
+case 'goalSave':{var g=D.goal;if(!g.title.trim())return;var tg=parseFloat(g.target)>0?parseFloat(g.target):100;S.goals.unshift({id:'g'+Date.now(),title:g.title.trim(),target:tg,unit:g.target?g.unit.trim():'%',deadline:g.deadline||'',createdAt:today(),current:0,done:false,log:[]});D.goal={title:'',target:'',unit:'',deadline:''};S.ui.goalForm=false;savePersonal();break}
+case 'goalLog':{var amt=parseFloat(S.ui.log[id]);if(!amt)return;S.goals.forEach(function(x){if(x.id===id){x.current=Math.max(0,x.current+amt);if(x.current>=x.target)x.done=true;x.log.unshift({amt:amt,date:today()});x.log=x.log.slice(0,50)}});S.ui.log[id]='';savePersonal();break}
+case 'goalDone':S.goals.forEach(function(x){if(x.id===id)x.done=!x.done});savePersonal();break;
+case 'monthPrev':case 'monthNext':{var p=S.ui.month.split('-').map(Number),dd=new Date(p[0],p[1]-1+(a==='monthNext'?1:-1),1);S.ui.month=dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0');break}
+case 'moneyForm':S.ui.moneyForm=!S.ui.moneyForm;break;
+case 'moneyType':D.money.type=el.getAttribute('data-type');D.money.category=D.money.type==='income'?CATS_IN[0]:CATS_OUT[0];break;
+case 'moneySave':{var m=D.money,am=parseFloat(m.amount);if(!(am>0))return;S.entries.unshift({id:'m'+Date.now(),type:m.type,amount:am,category:m.category,note:m.note.trim(),date:m.date});D.money.amount='';D.money.note='';S.ui.moneyForm=false;savePersonal();break}
+case 'tView':S.ui.tView=el.getAttribute('data-v');break;
+case 'tForm':S.ui.tForm=!S.ui.tForm;break;
+case 'tSave':{var s=D.sched;if(!s.name.trim()||!s.date)return;N=names();var tid=uid(),fee=parseFloat(s.fee)||0;
+put('t',tid,{id:tid,name:s.name.trim(),game:s.game.trim(),date:s.date,time:s.time,fee:fee,notes:s.notes.trim(),status:'upcoming',placement:null,prize:0,createdBy:me()});
+if(fee>0&&s.paidBy){var eid=uid();put('e',eid,{id:eid,type:'expense',desc:'Entry fee: '+s.name.trim(),category:'Entry fee',amount:fee,who:s.paidBy,split:N,date:s.date,tid:tid})}
+D.sched={name:'',game:'',date:today(),time:'',fee:'',paidBy:'',notes:''};S.ui.tForm=false;S.ui.tView='upcoming';break}
+case 'rsvp':{var rid=id+'_'+san(me());put('r',rid,{tid:id,name:me(),status:el.getAttribute('data-s')});break}
+case 'rec':S.ui.recording=id;D.result={placement:'',prize:'',receivedBy:'',notes:''};break;
+case 'recCancel':S.ui.recording=null;break;
+case 'recSave':{var r=D.result,t0=S.squad.t[id];if(!t0)return;var prize=parseFloat(r.prize)||0;N=names();
+var t1=Object.assign({},t0,{status:'played',placement:parseInt(r.placement,10)||null,prize:prize,notes:(r.notes||'').trim()||t0.notes});put('t',id,t1);
+if(prize>0&&r.receivedBy){var pid=uid();put('e',pid,{id:pid,type:'prize',desc:'Prize: '+t0.name,category:'Prize',amount:prize,who:r.receivedBy,split:N,date:t0.date,tid:id})}
+S.ui.recording=null;S.ui.tView='history';break}
+case 'sForm':N=names();S.ui.sForm=!S.ui.sForm;D.split.who=me();D.split.split=N.slice();break;
+case 'sType':D.split.type=el.getAttribute('data-type');break;
+case 'splitTog':{N=names();var nm2=N[parseInt(el.getAttribute('data-i'),10)],ix=D.split.split.indexOf(nm2);if(ix>=0)D.split.split.splice(ix,1);else D.split.split.push(nm2);break}
+case 'sSave':{var q=D.split,qa=parseFloat(q.amount);if(!(qa>0)||!q.desc.trim()||!q.split.length)return;var xid=uid();
+put('e',xid,{id:xid,type:q.type,desc:q.desc.trim(),category:q.type==='prize'?'Prize':q.category,amount:qa,who:q.who||me(),split:q.split.slice(),date:q.date});
+D.split.desc='';D.split.amount='';S.ui.sForm=false;break}
+case 'settle':{var sid=uid();put('e',sid,{id:sid,type:'payment',desc:'Settled up',category:'Payment',amount:parseFloat(el.getAttribute('data-amt')),who:el.getAttribute('data-from'),to:el.getAttribute('data-to'),split:[],date:today()});break}
+case 'delAsk':S.ui.confirm=el.getAttribute('data-kind')+id;break;
+case 'delNo':S.ui.confirm=null;break;
+case 'delYes':{var k=el.getAttribute('data-kind');if(k==='goal'){S.goals=S.goals.filter(function(x){return x.id!==id});savePersonal()}else if(k==='money'){S.entries=S.entries.filter(function(x){return x.id!==id});savePersonal()}else del(k,id);S.ui.confirm=null;break}
+case 'leaveAsk':S.ui.leave=true;break;
+case 'leaveNo':S.ui.leave=false;break;
+case 'leaveYes':try{localStorage.removeItem(LS.profile)}catch(x){};S.profile=null;S.ui.leave=false;break;
+}
+render()});
+
+function init(){
+S.profile=lsGet(LS.profile,null);S.goals=lsGet(LS.goals,[]);S.entries=lsGet(LS.money,[]);
+render();
+pull().then(function(){
+if(S.profile&&me()&&!S.squad.members[san(me())])return put('members',san(me()),{name:me(),joined:today()})}).then(render);
+if(DB){setInterval(function(){if(S.profile)pull().then(function(){if(!typing())render()})},15000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&S.profile)pull().then(function(){if(!typing())render()})})}}
+init();
+})();
+</script>
+</body>
+</html>
